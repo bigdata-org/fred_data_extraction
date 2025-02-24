@@ -1,5 +1,4 @@
-snowflake-snowpark-python[pandas]
-snowflake-cli-labs
-snowflake
 dotenv
 google-cloud-storage
+snowflake-cli
+snowflake-snowpark-python

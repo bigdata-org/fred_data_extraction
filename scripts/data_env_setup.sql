@@ -1,0 +1,18 @@
+-- Project Initialization for Production Environment Setup
+-- 
+-- This script establishes the foundational environment necessary for deploying the project
+-- into the production environment. The following steps will be executed:
+-- Note: This script can call a notebook with Snowpark integration, but most operations can be performed using SQL 
+-- with CREATE OR REPLACE commands, except for step (3)
+-- 1. Create a user role and grant appropriate permissions.
+-- 2. Use the created role to set up essential database objects, including:
+--    2.1. Configure GIT API Integration.
+--    2.2. Create Database, Schemas, and Warehouse.
+--    2.3. Set up External/Internal Stages if necessary.
+--    2.4. Create Permanent Tables under appropriate schemas (RAW/HARMONIZED/ANALYTICS).
+--    2.5. Define User Defined Functions (UDFs).
+--    2.6. Develop Stored Procedures.
+--    2.7. Implement Streams on appropriate schemas.
+--    2.8. Create Materialized Views in the ANALYTICS schema.
+--    2.9. Define and schedule Tasks for automation.
+-- 3. Load data upto current date
