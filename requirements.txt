@@ -1,3 +1,4 @@
+dotenv
+google-cloud-storage
 snowflake-cli
 snowflake-snowpark-python
-snowflake
