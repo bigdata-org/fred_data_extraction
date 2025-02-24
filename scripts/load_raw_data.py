@@ -56,9 +56,7 @@ def load_raw_data(session, storagedir=None,schema=None,tname=None):
         print(f"Data successfully loaded into table: {tname}")
         print(f"Copy result: {result}")
         # # df = session.read.parquet(location)
-        
-        # # Read Parquet file with explicit schema
-        # df = session.read.parquet(location)
+                # df = session.read.parquet(location)
         # df.copy_into_table(table_name=tname,force=True,validation_mode="RETURN_ERRORS")
         # print(f"data stored in {tname}")
 
@@ -75,8 +73,6 @@ def load_all_tables(session):
         schema = data['schema']
         for tname in tnames:
             print("loading{}".format(tname))
-            # print(storagedir)
-            # print(schema)
             load_raw_data(session,storagedir=storagedir,schema=schema,tname=tname)
 
     # _ = session.sql("ALTER WAREHOUSE FRED_WH SET WAREHOUSE_SIZE= XSMALL").collect()
