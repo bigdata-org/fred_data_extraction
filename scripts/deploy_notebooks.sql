@@ -1,0 +1,4 @@
+-- The objective of this notebook is to deploy notebooks using the CREATE OR REPLACE NOTEBOOK IDENTIFIER command.
+-- Please note that this script is parameterized with the following parameters:
+--     -- env
+--     -- branch
