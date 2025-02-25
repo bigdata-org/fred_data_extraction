@@ -1,12 +1,10 @@
 name: Deploy or Synchronize Notebooks
 
-# Controls when the action will run. 
 on:
   push:
     branches:
       - main
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -14,20 +12,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Setup Python environment
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # Install dependencies
       - name: Install Python packages
         run: pip install -r requirements.txt
 
+      # Test Snow CLI installation
       - name: Test Snow CLI
         run: snow --help
 
-      - name: Testing Github Actions
-        run: echo "So far, so good!"
+      # Deploy notebooks to Snowflake
+      - name: Deploy notebooks to Snowflake
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Fetch latest changes from Git repository in Snowflake
+          snow sql -q "ALTER GIT REPOSITORY GIT_REPO FETCH" \
+            --temporary-connection \
+            --account $SNOWFLAKE_ACCOUNT \
+            --user $SNOWFLAKE_USER \
+            --role $SNOWFLAKE_ROLE \
+            --warehouse $SNOWFLAKE_WAREHOUSE \
+            --database $SNOWFLAKE_DATABASE \
+            --schema $SNOWFLAKE_SCHEMA
+
+          # Execute SQL script from Git repository stage with parameters
+          snow sql -q "EXECUTE IMMEDIATE FROM @GIT_REPO/branches/main/scripts/data_env_setup.sql USING (env => 'DEV', AWS_ACCESS_KEY => '$AWS_ACCESS_KEY', AWS_SECRET_ACCESS_KEY => '$AWS_SECRET_ACCESS_KEY')" \
+            --temporary-connection \
+            --account $SNOWFLAKE_ACCOUNT \
+            --user $SNOWFLAKE_USER \
+            --role $SNOWFLAKE_ROLE \
+            --warehouse $SNOWFLAKE_WAREHOUSE \
+            --database $SNOWFLAKE_DATABASE \
+            --schema $SNOWFLAKE_SCHEMA
