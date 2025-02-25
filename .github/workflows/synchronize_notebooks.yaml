@@ -3,7 +3,7 @@ name: Deploy or Synchronize Notebooks
 on:
   push:
     branches:
-      - main
+      - Tanmay
 
   workflow_dispatch:
 
