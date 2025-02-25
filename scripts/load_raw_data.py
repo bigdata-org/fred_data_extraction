@@ -80,7 +80,7 @@ def load_all_tables(session):
 
 if __name__ == "__main__":  
      with Session.builder.getOrCreate() as session:
-         print("called")
-        # load_all_tables(session)
+        #  print("called")
+        load_all_tables(session)
         # upload_data_to_gcloud(bucket_name)
        

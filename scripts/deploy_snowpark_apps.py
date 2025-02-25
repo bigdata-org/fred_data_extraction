@@ -19,9 +19,8 @@ for (directory_path, directory_names, file_names) in os.walk(root_directory):
 
     # Skip any folders we want to ignore
     # TODO: Update this logic to skip all subfolders of ignored folder
-    if base_name in ignore_folders:
-#        print(f"Skipping ignored folder {directory_path}")
-        continue
+    if any(ignored in directory_path for ignored in ignore_folders):
+     continue
 
     # An snowflake.yml file in the folder is our indication that this folder contains
     # a Snow CLI project
