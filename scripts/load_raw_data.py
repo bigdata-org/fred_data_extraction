@@ -42,7 +42,6 @@ def upload_data_to_gcloud(bucket_name, end_date=date.today()):
     return "Data uploaded to GCP"
 
 
-
 def load_raw_data(session, storagedir=None,schema=None,tname=None):
     session.use_role("FRED_ROLE")
     session.use_database("FRED_DB")
@@ -58,10 +57,10 @@ def load_raw_data(session, storagedir=None,schema=None,tname=None):
         """
         result = session.sql(copy_query).collect()
         print(f"Data successfully loaded into table: {tname}")
-        print(f"Copy result: {result}")
     except Exception as e:
         print(e)
         raise
+    return result
 
 
 def load_all_tables(session):
@@ -72,15 +71,16 @@ def load_all_tables(session):
         schema = data['schema']
         for tname in tnames:
             print("loading{}".format(tname))
-            load_raw_data(session,storagedir=storagedir,schema=schema,tname=tname)
+            result = load_raw_data(session,storagedir=storagedir,schema=schema,tname=tname)
+    
+    return result 
 
     # _ = session.sql("ALTER WAREHOUSE FRED_WH SET WAREHOUSE_SIZE= XSMALL").collect()
 
 
-
 if __name__ == "__main__":  
      with Session.builder.getOrCreate() as session:
-        #  print("called")
+         print("called")
         # load_all_tables(session)
-        upload_data_to_gcloud(bucket_name)
+        # upload_data_to_gcloud(bucket_name)
        
