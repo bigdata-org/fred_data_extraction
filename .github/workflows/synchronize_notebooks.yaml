@@ -34,4 +34,4 @@ jobs:
           SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE_T }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE_T }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE_T }}
-        run: python deploy_snowpark_apps.py $GITHUB_WORKSPACE
+        run: python ./scripts/deploy_snowpark_apps.py $GITHUB_WORKSPACE
