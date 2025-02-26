@@ -1,0 +1,28 @@
+# definition_version: 1
+# # snowpark:
+# #   project_name: "fred_project"
+# #   stage_name: "FRED_DB.FRED_HARMONIZED.DEPLOYMENT"
+# #   src: "values_update_sp/"
+# #   procedures:
+# #     - name: "values_update_sp"
+# #       database: "FRED_DB"
+# #       schema: "FRED_HARMONIZED"
+# #       handler: "procedure.main"
+# #       runtime: "3.10"
+# #       signature: ""
+# #       returns: string
+
+
+definition_version: 1
+snowpark:
+  project_name: "fred_project"
+  stage_name: "FRED_DB.FRED_HARMONIZED.DEPLOYMENT"
+  src: "values_update_sp/"
+  procedures:
+    - name: "values_update_sp"
+      database: "FRED_DB"
+      schema: "FRED_HARMONIZED"
+      handler: "procedure.main"
+      runtime: "3.10"
+      signature: ""
+      returns: string
