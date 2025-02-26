@@ -1,3 +1,11 @@
+--!jinja
+
+/*-----------------------------------------------------------------------------
+Script:       data_env_setup.sql
+Author:       SATHYA
+Last Updated: 6/11/2024
+-----------------------------------------------------------------------------*/
+
 -- Project Initialization for Production Environment Setup
 --
 -- This script establishes the foundational environment necessary for deploying the project
@@ -16,16 +24,7 @@
 --    2.8. Create Materialized Views in the ANALYTICS schema.
 --    2.9. Define and schedule Tasks for automation.
 -- 3. Load data upto current date
- 
 
-SET GITHUB_SECRET_USERNAME = {{GITHUB_SECRET_USERNAME}};
-SET GITHUB_SECRET_PASSWORD = {{GITHUB_SECRET_PASSWORD}};
-SET GITHUB_URL_PREFIX = 'https://github.com/bigdata-org';
-SET GITHUB_REPO_ORIGIN = 'https://github.com/bigdata-org/fred_data_extraction.git';
-SET AWS_ACCESS_KEY = {{AWS_ACCESS_KEY}};
-SET AWS_SECRET_ACCESS_KEY = {{AWS_SECRET_ACCESS_KEY}};
-SET AWS_CREDENTIALS = '{"AWS_ACCESS_KEY":"' || $AWS_ACCESS_KEY || '", "AWS_SECRET_ACCESS_KEY":"' || $AWS_SECRET_ACCESS_KEY || '"}';
- 
 USE ROLE FRED_ROLE;
 
 --WAREHOUSE
@@ -38,23 +37,34 @@ USE DATABASE FRED_DB;
 CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_RAW";
 CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_HARMONIZED";
 CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_ANALYTICS";
+
+--SECRET 
+CREATE OR REPLACE SECRET FRED_DB.INTEGRATIONS.AWS_ACCESS_KEY_SECRET
+TYPE = GENERIC_STRING 
+SECRET_STRING = '{{AWS_ACCESS_KEY}}';
+
+CREATE OR REPLACE SECRET FRED_DB.INTEGRATIONS.AWS_SECRET_ACCESS_KEY_SECRET
+TYPE = GENERIC_STRING 
+SECRET_STRING = '{{AWS_SECRET_ACCESS_KEY}}';
  
 -- file format (schema level)
 CREATE OR REPLACE FILE FORMAT FRED_DB.INTEGRATIONS.CSV_FILE_FORMAT
     TYPE = CSV
     SKIP_HEADER=1;
 
+-- CREATE OR REPLACE STAGE FRED_DB.INTEGRATIONS.FRED_RAW_STAGE
+--     URL = 's3://sfopenaccessbucket/'
+--     FILE_FORMAT = FRED_DB.INTEGRATIONS.CSV_FILE_FORMAT
+--     CREDENTIALS = (AWS_KEY_ID = '<% AWS_ACCESS_KEY %>'
+--                    AWS_SECRET_KEY = '<% AWS_SECRET_ACCESS_KEY %>');
+
 CREATE OR REPLACE STAGE FRED_DB.INTEGRATIONS.FRED_RAW_STAGE
     URL = 's3://sfopenaccessbucket/'
     FILE_FORMAT = FRED_DB.INTEGRATIONS.CSV_FILE_FORMAT
-    CREDENTIALS = (AWS_KEY_ID = $AWS_ACCESS_KEY 
-                   AWS_SECRET_KEY = $AWS_SECRET_ACCESS_KEY);
+    CREDENTIALS = (AWS_KEY_ID = '{{AWS_ACCESS_KEY}}'
+                   AWS_SECRET_KEY = '{{AWS_SECRET_ACCESS_KEY}}');
 
-CREATE OR REPLACE SECRET FRED_DB.INTEGRATIONS.AWS_S3_SECRET
-TYPE = GENERIC_STRING 
-SECRET_STRING = $AWS_CREDENTIALS;
-
---Permanent Table Configuration
+--Permanent Table/ Stream, Materialized View Configuration
 CREATE OR REPLACE TABLE "FRED_DB"."{{env}}_FRED_RAW".FREDDATA (DATA_DATE DATE, VALUE NUMBER(5,2));
 CREATE OR REPLACE STREAM "FRED_DB"."{{env}}_FRED_RAW".FREDDATA_STREAM ON TABLE "FRED_DB"."{{env}}_FRED_RAW".FREDDATA;
 
@@ -62,7 +72,6 @@ CREATE OR REPLACE TABLE "FRED_DB"."{{env}}_FRED_HARMONIZED".FREDDATA (DATA_DATE 
 
 CREATE OR REPLACE MATERIALIZED VIEW "FRED_DB"."{{env}}_FRED_ANALYTICS".FREDDATA 
 AS SELECT DATA_DATE, VALUE FROM "FRED_DB"."{{env}}_FRED_HARMONIZED".FREDDATA;
-
 
 -- Network Configuration
 CREATE OR REPLACE NETWORK RULE FREDAPI_NR
@@ -73,7 +82,7 @@ CREATE OR REPLACE NETWORK RULE FREDAPI_NR
  -- make access integration , doesnt work on trial ccounts:
 CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION FREDAPI_EXT_ACCESS_INT
  ALLOWED_NETWORK_RULES = (FREDAPI_NR)
- ALLOWED_AUTHENTICATION_SECRETS = (FRED_DB.INTEGRATIONS.AWS_S3_SECRET)
+ ALLOWED_AUTHENTICATION_SECRETS = (FRED_DB.INTEGRATIONS.AWS_ACCESS_KEY_SECRET, FRED_DB.INTEGRATIONS.AWS_SECRET_ACCESS_KEY_SECRET)
  ENABLED = true;
 
  CREATE OR REPLACE NETWORK RULE S3_NR
@@ -86,7 +95,6 @@ CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION S3_EXT_ACCESS_INT
  ALLOWED_NETWORK_RULES = (S3_NR)
  ENABLED = true;
 
- 
 CREATE OR REPLACE FUNCTION FRED_DB.INTEGRATIONS.fredapi_response_to_df(api_url STRING)
 RETURNS INTEGER
 LANGUAGE PYTHON
@@ -94,7 +102,7 @@ RUNTIME_VERSION = 3.9
 EXTERNAL_ACCESS_INTEGRATIONS = (FREDAPI_EXT_ACCESS_INT, S3_EXT_ACCESS_INT) -- Make sure this integration is set up for AWS
 HANDLER = 'fredapi_response_to_df'
 PACKAGES = ('requests', 'pandas', 'boto3')
-SECRETS = ('AWS_S3_SECRET' = FRED_DB.INTEGRATIONS.AWS_S3_SECRET)   -- Added boto3 for AWS S3 interaction
+SECRETS = ('AWS_ACCESS_KEY_SECRET' = FRED_DB.INTEGRATIONS.AWS_ACCESS_KEY_SECRET, 'AWS_SECRET_ACCESS_KEY_SECRET' = FRED_DB.INTEGRATIONS.AWS_SECRET_ACCESS_KEY_SECRET)   -- Added boto3 for AWS S3 interaction
 AS
 $$
 import _snowflake
@@ -105,10 +113,9 @@ from io import StringIO
 
 def fredapi_response_to_df(api_url):
     try:
-        secrets = _snowflake.get_generic_secret_string("AWS_S3_SECRET")
-        secrets = eval(secrets)
-        aws_access_key_id = secrets["AWS_ACCESS_KEY"]
-        aws_secret_access_key = secrets["AWS_SECRET_ACCESS_KEY"]
+        aws_access_key_id = _snowflake.get_generic_secret_string("AWS_ACCESS_KEY_SECRET")
+        aws_secret_access_key = _snowflake.get_generic_secret_string("AWS_SECRET_ACCESS_KEY_SECRET")
+
         # Fetch the data from the API
         response = requests.get(api_url)
         data = response.json()
