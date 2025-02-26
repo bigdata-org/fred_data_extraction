@@ -1,14 +1,16 @@
+-- run from accountadmin or sysadmin
 -- minimal privs necessary for the creation of user environment
 -- consumer of this service may create any user of his choice or use our optional_pre_deployment_script_0.sql
 
-SET MY_USER = CURRENT_USER();
-create database IF NOT EXISTS fred_setup;
-grant ownership on database fred_setup to role dbt_role;
 CREATE OR REPLACE ROLE  FRED_ROLE;
 GRANT ROLE FRED_ROLE TO USER DBT_DEV;
 GRANT ROLE FRED_ROLE TO ROLE SYSADMIN;
- 
-GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE FRED_ROLE;
+create or replace database FRED_SETUP;
+create or replace schema DBO;
+grant ownership on database fred_setup to role FRED_ROLE;
+grant ownership on schema fred_setup.DBO to role FRED_ROLE;
+
+ GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE FRED_ROLE;
 GRANT CREATE DATABASE ON ACCOUNT TO ROLE FRED_ROLE;
 GRANT EXECUTE TASK ON ACCOUNT TO ROLE FRED_ROLE;
 GRANT MONITOR EXECUTION ON ACCOUNT TO ROLE FRED_ROLE;
