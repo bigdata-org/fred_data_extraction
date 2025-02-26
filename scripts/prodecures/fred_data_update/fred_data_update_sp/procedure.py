@@ -26,14 +26,14 @@ def process_fred_harmonized_data(session):
     if stream_data.count() > 0:
         print("Stream data detected, processing...")
 
-        harmonized_data = stream_data.select(
-            F.col("DATA_DATE").alias("DATA_DATE"), 
-            F.col("VALUE"),
-            F.current_timestamp().alias("CREATED_DATE")
-        )
+        # harmonized_data = stream_data.select(
+        #     F.col("DATA_DATE").alias("DATA_DATE"), 
+        #     F.col("VALUE"),
+        #     F.current_timestamp().alias("CREATED_DATE")
+        # )
 
         # Save transformed data temporarily
-        harmonized_data.write.mode("overwrite").save_as_table("FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED")
+        # harmonized_data.write.mode("overwrite").save_as_table("FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED")
 
         # Ensure target table exists
         create_fred_harmonized_table(session)
@@ -71,6 +71,6 @@ def test_fred_harmonized_data(session):
 
 # Entry point for the stored procedure
 def main(session):
-    create_fred_raw_stream(session)
-    process_fred_harmonized_data(session)
-    return "Procedure executed successfully."
+    # create_fred_raw_stream(session)
+   result = process_fred_harmonized_data(session)
+   return result
