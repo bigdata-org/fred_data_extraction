@@ -18,7 +18,6 @@ for (directory_path, directory_names, file_names) in os.walk(root_directory):
     base_name = os.path.basename(directory_path)
 
     # Skip any folders we want to ignore
-    # TODO: Update this logic to skip all subfolders of ignored folder
     if any(ignored in directory_path for ignored in ignore_folders):
      continue
 
