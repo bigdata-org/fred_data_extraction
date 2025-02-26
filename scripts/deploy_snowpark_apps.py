@@ -46,8 +46,25 @@ for (directory_path, directory_names, file_names) in os.walk(root_directory):
     # Make sure all 6 SNOWFLAKE_ environment variables are set
     # SnowCLI accesses the passowrd directly from the SNOWFLAKE_PASSWORD environmnet variable
 
-    os.system("snow sql -q 'USE WAREHOUSE $SNOWFLAKE_WAREHOUSE_T'")
 
 
-    os.system(f"snow snowpark build --temporary-connection --account $SNOWFLAKE_ACCOUNT --user $SNOWFLAKE_USER --role $SNOWFLAKE_ROLE --warehouse $SNOWFLAKE_WAREHOUSE --database $SNOWFLAKE_DATABASE")
-    os.system(f"snow snowpark deploy --replace --temporary-connection --account $SNOWFLAKE_ACCOUNT --user $SNOWFLAKE_USER --role $SNOWFLAKE_ROLE --warehouse $SNOWFLAKE_WAREHOUSE --database $SNOWFLAKE_DATABASE")
+    os.system(f"snow sql -q 'USE WAREHOUSE {os.getenv('SNOWFLAKE_WAREHOUSE')}'")
+
+    os.system(f"snow snowpark build --temporary-connection "
+            f"--account {os.getenv('SNOWFLAKE_ACCOUNT')} "
+            f"--user {os.getenv('SNOWFLAKE_USER')} "
+            f"--role {os.getenv('SNOWFLAKE_ROLE')} "
+            f"--warehouse {os.getenv('SNOWFLAKE_WAREHOUSE')} "
+            f"--database {os.getenv('SNOWFLAKE_DATABASE')}")
+
+    os.system(f"snow snowpark deploy --replace --temporary-connection "
+            f"--account {os.getenv('SNOWFLAKE_ACCOUNT')} "
+            f"--user {os.getenv('SNOWFLAKE_USER')} "
+            f"--role {os.getenv('SNOWFLAKE_ROLE')} "
+            f"--warehouse {os.getenv('SNOWFLAKE_WAREHOUSE')} "
+            f"--database {os.getenv('SNOWFLAKE_DATABASE')}")
+
+
+    # os.system(f"snow sql -q 'USE WAREHOUSE $SNOWFLAKE_WAREHOUSE'")
+    # os.system(f"snow snowpark build --temporary-connection --account $SNOWFLAKE_ACCOUNT --user $SNOWFLAKE_USER --role $SNOWFLAKE_ROLE --warehouse $SNOWFLAKE_WAREHOUSE --database $SNOWFLAKE_DATABASE")
+    # os.system(f"snow snowpark deploy --replace --temporary-connection --account $SNOWFLAKE_ACCOUNT --user $SNOWFLAKE_USER --role $SNOWFLAKE_ROLE --warehouse $SNOWFLAKE_WAREHOUSE --database $SNOWFLAKE_DATABASE")
