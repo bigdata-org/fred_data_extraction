@@ -1,4 +1,3 @@
-import time 
 import requests 
 import os
 from dotenv import load_dotenv
@@ -7,7 +6,6 @@ from google.cloud import storage
 from io import BytesIO, StringIO
 from snowflake.snowpark import Session
 # from snowflake.snowpark.types import Struc
-import snowflake.snowpark.functions as F
 from datetime import date;
 
 

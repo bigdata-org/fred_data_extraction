@@ -21,20 +21,7 @@ def create_fred_harmonized_table(session):
     print("Table FRED_HARMONIZED_TABLE checked/created successfully.")
 
 def process_fred_harmonized_data(session):
-  stream_data = session.table("FRED_DB.FRED_RAW.FRED_RAW_STAGE_STREAM")
   try:
-    if stream_data.count() > 0:
-        print("Stream data detected, processing...")
-
-        # harmonized_data = stream_data.select(
-        #     F.col("DATA_DATE").alias("DATA_DATE"), 
-        #     F.col("VALUE"),
-        #     F.current_timestamp().alias("CREATED_DATE")
-        # )
-
-        # Save transformed data temporarily
-        # harmonized_data.write.mode("overwrite").save_as_table("FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED")
-
         # Ensure target table exists
         create_fred_harmonized_table(session)
 
@@ -59,9 +46,6 @@ def process_fred_harmonized_data(session):
         # Drop temp table after merging
         copy_result =  session.sql("DROP TABLE IF EXISTS FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED").collect()
         return copy_result    
-    
-    else:
-        print("No new data in stream, skipping merge.")
   except Exception as e:
     return str(e)
 

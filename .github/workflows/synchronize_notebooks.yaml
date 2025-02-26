@@ -5,14 +5,14 @@ on:
   push:
     branches:
       - Tanmay
-
+  schedule:
+    - cron: "1 * * * *"  # Runs upload_fred_data daily at 11:30 PM UTC
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy_snowflake:
     runs-on: ubuntu-latest
-
     env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_T }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER_T }}
@@ -20,6 +20,8 @@ jobs:
           SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE_T }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE_T }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE_T }}
+          FRED_API: ${{secrets.FRED_API_T}}
+          GCLOUD_BUCKET_NAME: ${{secrets.GCLOUD_BUCKET_NAME}}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -39,3 +41,37 @@ jobs:
       
       - name: Deploy Snowpark apps
         run: python ./scripts/deploy_snowpark_apps.py $GITHUB_WORKSPACE
+  
+  Update_bucket:
+    runs-on : ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  # Runs only on schedule or manual trigger
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests google-cloud-storage
+
+      - name: Set up Google Cloud credentials
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
+
+      - name: Run Python script to upload FRED data
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API }}
+          GCP_BUCKET_NAME: ${{secrets.GCLOUD_BUCKET_NAME}}
+        run: python upload_fred_data.py
+
+
+
