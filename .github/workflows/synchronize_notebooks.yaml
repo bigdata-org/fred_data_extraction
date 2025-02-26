@@ -37,10 +37,5 @@ jobs:
       - name: Debug Environment Variables
         run: env | grep SNOWFLAKE
       
-      - name: Debug Secrets
-        run: |
-          echo "SNOWFLAKE_ACCOUNT=${{ secrets.SNOWFLAKE_ACCOUNT_T }}"
-          echo "SNOWFLAKE_USER=${{ secrets.SNOWFLAKE_USER_T }}"
-
       - name: Deploy Snowpark apps
         run: python ./scripts/deploy_snowpark_apps.py $GITHUB_WORKSPACE
