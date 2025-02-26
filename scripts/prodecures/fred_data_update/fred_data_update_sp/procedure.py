@@ -21,8 +21,8 @@ def create_fred_harmonized_table(session):
     print("Table FRED_HARMONIZED_TABLE checked/created successfully.")
 
 def process_fred_harmonized_data(session):
-    stream_data = session.table("FRED_DB.FRED_RAW.FRED_RAW_STAGE_STREAM")
-
+  stream_data = session.table("FRED_DB.FRED_RAW.FRED_RAW_STAGE_STREAM")
+  try:
     if stream_data.count() > 0:
         print("Stream data detected, processing...")
 
@@ -40,24 +40,30 @@ def process_fred_harmonized_data(session):
 
         # Merge transformed data into harmonized table
         merge_query = '''
-            MERGE INTO FRED_DB.FRED_HARMONIZED.FRED_HARMONIZED_TABLE AS target
-            USING FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED AS source
+           MERGE INTO FRED_DB.FRED_HARMONIZED.FRED_HARMONIZED_TABLE AS target
+            USING (
+                SELECT DATA_DATE, VALUE, CURRENT_TIMESTAMP AS CREATED_DATE
+                FROM FRED_DB.FRED_RAW.FRED_RAW_STAGE_STREAM
+                WHERE METADATA$ACTION = 'INSERT'
+            ) AS source
             ON target.DATA_DATE = source.DATA_DATE
             WHEN MATCHED THEN 
-                UPDATE SET target.VALUE = source.VALUE, 
-                           target.CREATED_DATE = source.CREATED_DATE
+                UPDATE SET target.VALUE = source.VALUE 
+                        -- target.CREATED_DATE = CURRENT_TIMESTAMP  -- Use current timestamp
             WHEN NOT MATCHED THEN 
                 INSERT (DATA_DATE, VALUE, CREATED_DATE) 
-                VALUES (source.DATA_DATE, source.VALUE, source.CREATED_DATE);
+                VALUES (source.DATA_DATE, source.VALUE, CURRENT_TIMESTAMP);
         '''
         session.sql(merge_query).collect()
         
         # Drop temp table after merging
-        session.sql("DROP TABLE IF EXISTS FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED").collect()
-        
-        print("Merge operation completed successfully.")
+        copy_result =  session.sql("DROP TABLE IF EXISTS FRED_DB.FRED_RAW.TEMP_FRED_HARMONIZED").collect()
+        return copy_result    
+    
     else:
         print("No new data in stream, skipping merge.")
+  except Exception as e:
+    return str(e)
 
 def test_fred_harmonized_data(session):
     print("Showing data in FRED_HARMONIZED_TABLE:")

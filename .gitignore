@@ -1,4 +1,5 @@
 .venv
 .env
 .gitcongig.swp
- scripts/udf/test_udf/
+.vscode
+ 
