@@ -1,4 +1,4 @@
-name: Deploy or Synchronize Notebooks
+name: Deploy functions, SP
 
 # Controls when the action will run. 
 on:
