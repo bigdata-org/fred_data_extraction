@@ -6,7 +6,7 @@ on:
     branches:
       - Tanmay
   schedule:
-    - cron: "1 * * * *"  # Runs upload_fred_data daily at 11:30 PM UTC
+    - cron: "*/1 * * * *"  # Runs upload_fred_data daily at 11:30 PM UTC
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
