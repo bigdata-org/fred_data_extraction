@@ -1,11 +1,11 @@
 name: Update Data
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   schedule:
-    - cron: "30 23 * * *"  # Runs every 5 minutes
+    - cron: "0 */4 * * *" 
   workflow_dispatch:  
   
 jobs:
