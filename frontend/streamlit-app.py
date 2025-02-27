@@ -13,9 +13,9 @@ if 'response' not in st.session_state:
 
 if st.session_state['response']['statusCode']==200:
     data =st.session_state['response']['body']
-    data2 = json.loads(data[1])
-    data3 = json.loads(data[2])
-    data4 = json.loads(data[3])
+    data2 = json.loads(data[0])
+    data3 = json.loads(data[1])
+    data4 = json.loads(data[2])
     
     df2 = pd.DataFrame(data2)
     df3 = pd.DataFrame(data3)
