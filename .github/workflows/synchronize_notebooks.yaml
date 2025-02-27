@@ -1,32 +1,29 @@
 name: Deploy Snowpark Apps
 
-# Controls when the action will run. 
 on:
   push:
     branches:
-      - Tanmay
+      - Tanmay  # ✅ Runs deploy_snowflake only when changes are pushed to this branch
   schedule:
-    - cron: "*/1 * * * *"  # Runs upload_fred_data daily at 11:30 PM UTC
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+    - cron: "*/5 * * * *"  # ✅ Runs Update_bucket every 5 minutes
+  workflow_dispatch:  # ✅ Allows manual trigger
 
 jobs:
   deploy_snowflake:
     runs-on: ubuntu-latest
     env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_T }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER_T }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD_T }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE_T }}
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE_T }}
-          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE_T }}
-          FRED_API: ${{secrets.FRED_API_T}}
-          GCLOUD_BUCKET_NAME: ${{secrets.GCLOUD_BUCKET_NAME}}
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_T }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER_T }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD_T }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE_T }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE_T }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE_T }}
+      FRED_API: ${{ secrets.FRED_API_T }}
+      GCLOUD_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v4
@@ -41,12 +38,14 @@ jobs:
       
       - name: Deploy Snowpark apps
         run: python ./scripts/deploy_snowpark_apps.py $GITHUB_WORKSPACE
-  
-  Update_bucket:
-    runs-on : ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  # Runs only on schedule or manual trigger
 
+  Update_bucket:
+    runs-on: ubuntu-latest
     steps:
+      # Debug the event that triggered the workflow
+      - name: Debug GitHub Event
+        run: echo "${{ github.event_name }}"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -70,8 +69,5 @@ jobs:
       - name: Run Python script to upload FRED data
         env:
           FRED_API_KEY: ${{ secrets.FRED_API }}
-          GCP_BUCKET_NAME: ${{secrets.GCLOUD_BUCKET_NAME}}
+          GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
         run: python upload_fred_data.py
-
-
-
