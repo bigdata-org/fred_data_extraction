@@ -65,9 +65,12 @@ jobs:
         run: |
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
+      - name : Deug 
+        run: |
+            echo ${{ github.event_name }}
 
       - name: Run Python script to upload FRED data
         env:
           FRED_API_KEY: ${{ secrets.FRED_API }}
           GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
-        run: python load_raw_data.py
+        run: python scripts/load_raw_data.py
