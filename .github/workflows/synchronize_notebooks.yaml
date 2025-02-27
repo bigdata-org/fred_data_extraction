@@ -70,4 +70,4 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API }}
           GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
-        run: python .\scripts\load_raw_data.py
+        run: python load_raw_data.py
