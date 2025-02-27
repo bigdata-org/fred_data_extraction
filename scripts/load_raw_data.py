@@ -19,6 +19,15 @@ TABLE_DICT = {
 }
 
 
+connection_parameters = {
+    "account": os.getenv('SNOWFLAKE_ACCOUNT'),
+    "user": os.getenv('SNOWFLAKE_USER'),
+    "password": os.getenv('SNOWFLAKE_PASSWORD'),
+    "role": os.getenv('SNOWFLAKE_ROLE'),
+    "warehouse": os.getenv('SNOWFLAKE_WH'),
+    "database": os.getenv('SNOWFLAKE_DB'),
+}
+
 
 def upload_data_to_gcloud(bucket_name, end_date=date.today()):
     start_date= '2020-02-23'
@@ -77,9 +86,7 @@ def load_all_tables(session):
 
 
 if __name__ == "__main__":  
-     with Session.builder.getOrCreate() as session:
-        #  print("called")
+     with Session.builder.configs(connection_parameters).create() as session :
         upload_data_to_gcloud(bucket_name, date.today())
         load_all_tables(session)
-        # upload_data_to_gcloud(bucket_name)
        
