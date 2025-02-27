@@ -39,7 +39,7 @@ jobs:
       - name: Deploy Snowpark apps
         run: python ./scripts/deploy_snowpark_apps.py $GITHUB_WORKSPACE
 
-  Update_bucket:
+  Update_data:
     runs-on: ubuntu-latest
     steps:
       # Debug the event that triggered the workflow
@@ -70,4 +70,4 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API }}
           GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
-        run: python upload_fred_data.py
+        run: python .\scripts\load_raw_data.py
