@@ -1,4 +1,3 @@
-import time 
 import requests 
 import os
 from dotenv import load_dotenv
@@ -6,22 +5,33 @@ import pandas as pd
 from google.cloud import storage
 from io import BytesIO, StringIO
 from snowflake.snowpark import Session
-from snowflake.snowpark.types import StructType, StructField, StringType, IntegerType
+# from snowflake.snowpark.types import Struc
+from datetime import date;
 
 
 load_dotenv()
 
 fred_api=os.getenv('FRED_API')
-fred_api_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key={fred_api}&file_type=json&observation_start=2020-02-23&observation_end=2025-02-23"
 bucket_name = os.getenv('GCLOUD_BUCKET_NAME')
 FRED_Table = ['FredData']
 TABLE_DICT = {
-    "fred_data": {"schema": "RAW_FRED","tables":FRED_Table}
+    "fred_data": {"schema": "FRED_RAW","tables":FRED_Table}
 }
 
 
+connection_parameters = {
+    "account": os.getenv('SNOWFLAKE_ACCOUNT'),
+    "user": os.getenv('SNOWFLAKE_USER'),
+    "password": os.getenv('SNOWFLAKE_PASSWORD'),
+    "role": os.getenv('SNOWFLAKE_ROLE'),
+    "warehouse": os.getenv('SNOWFLAKE_WH'),
+    "database": os.getenv('SNOWFLAKE_DB'),
+}
 
-def upload_data_to_gcloud(url,bucket_name):
+
+def upload_data_to_gcloud(bucket_name, end_date=date.today()):
+    start_date= '2020-02-23'
+    url = f"https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key={fred_api}&file_type=json&observation_start={start_date}&observation_end={end_date}"
     try: 
         response  = requests.get(url)
         data = response.json()
@@ -32,19 +42,19 @@ def upload_data_to_gcloud(url,bucket_name):
         df.to_csv(csv_data, index=False)
         storage_client = storage.Client()
         bucket =  storage_client.bucket(bucket_name)
-        blob = bucket.blob(f"fred_data/data.csv")
+        blob = bucket.blob(f"fred_data/FredData.csv")
         blob.upload_from_string(csv_data.getvalue(), content_type='text/csv')   
     except Exception as e:
         return f"Error uploading data to GCP: {e}"
     return "Data uploaded to GCP"
 
 
-
 def load_raw_data(session, storagedir=None,schema=None,tname=None):
     session.use_role("FRED_ROLE")
     session.use_database("FRED_DB")
+    session.use_warehouse("FRED_WH")
     session.use_schema(schema)
-    location = "@external_data.FRED_RAW_STAGE/{}".format(storagedir)
+    location = "@objects.FRED_RAW_STAGE/{}/{}.csv".format(storagedir, tname)
     try:
         copy_query = f"""
             COPY INTO {tname}
@@ -54,32 +64,29 @@ def load_raw_data(session, storagedir=None,schema=None,tname=None):
         """
         result = session.sql(copy_query).collect()
         print(f"Data successfully loaded into table: {tname}")
-        print(f"Copy result: {result}")
-        # # df = session.read.parquet(location)
-                # df = session.read.parquet(location)
-        # df.copy_into_table(table_name=tname,force=True,validation_mode="RETURN_ERRORS")
-        # print(f"data stored in {tname}")
-
     except Exception as e:
         print(e)
         raise
+    return result
 
 
 def load_all_tables(session):
-    # _ = session.sql("ALTER WAREHOUSE FRED_WH SET WAREHOUSE_SIZE= XSMALL WAIT_FOR_COMPLETION= TRUE").collect()
+    # _ = session.sql("ALTER WAREHOUSE FRED_WH SET WAREHOUSE_SIZE= XLARGE WAIT_FOR_COMPLETION= TRUE").collect()
 
     for storagedir, data in TABLE_DICT.items():
         tnames = data['tables']
         schema = data['schema']
         for tname in tnames:
             print("loading{}".format(tname))
-            load_raw_data(session,storagedir=storagedir,schema=schema,tname=tname)
+            result = load_raw_data(session,storagedir=storagedir,schema=schema,tname=tname)
+    
+    return result 
 
     # _ = session.sql("ALTER WAREHOUSE FRED_WH SET WAREHOUSE_SIZE= XSMALL").collect()
 
 
 if __name__ == "__main__":  
-     with Session.builder.getOrCreate() as session:
-        #  print("ok")
-         load_all_tables(session)
-        # upload_data_to_gcloud(fred_api_url,bucket_name)
+     with Session.builder.configs(connection_parameters).create() as session :
+        upload_data_to_gcloud(bucket_name, date.today())
+        load_all_tables(session)
+       
