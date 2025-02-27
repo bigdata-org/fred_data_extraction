@@ -11,7 +11,6 @@ from datetime import date;
 
 load_dotenv()
 
-fred_api=os.getenv('FRED_API')
 bucket_name = os.getenv('GCLOUD_BUCKET_NAME')
 FRED_Table = ['FredData']
 TABLE_DICT = {
@@ -29,18 +28,19 @@ connection_parameters = {
 }
 
 
-def upload_data_to_gcloud(bucket_name, end_date=date.today()):
+def upload_data_to_gcloud(bucket_name, end_date=None):
     start_date= '2020-02-23'
+    end_date=date.today()
+    fred_api=os.getenv('FRED_API')
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key={fred_api}&file_type=json&observation_start={start_date}&observation_end={end_date}"
+    storage_client = storage.Client()
     try: 
         response  = requests.get(url)
         data = response.json()
         df = pd.DataFrame(data['observations'])
         df.drop(columns=['realtime_start', 'realtime_end'], inplace=True)
-
         csv_data = StringIO()
         df.to_csv(csv_data, index=False)
-        storage_client = storage.Client()
         bucket =  storage_client.bucket(bucket_name)
         blob = bucket.blob(f"fred_data/FredData.csv")
         blob.upload_from_string(csv_data.getvalue(), content_type='text/csv')   

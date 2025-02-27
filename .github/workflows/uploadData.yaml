@@ -20,6 +20,7 @@ jobs:
       SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE_T }}
       FRED_API: ${{ secrets.FRED_API_T }}
       GCLOUD_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
+      GCP_SA_KEY: ${{secrets.GCP_SA_KEY}}
     
     steps:
       - name: Debug GitHub Event
@@ -47,4 +48,5 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API }}
           GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
+          GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json
         run: python scripts/load_raw_data.py
