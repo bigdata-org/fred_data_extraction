@@ -3,10 +3,10 @@ name: Deploy Snowpark Apps
 on:
   push:
     branches:
-      - Tanmay  # ✅ Runs deploy_snowflake only when changes are pushed to this branch
+      - Tanmay
   schedule:
-    - cron: "*/5 * * * *"  # ✅ Runs Update_bucket every 5 minutes
-  workflow_dispatch:  # ✅ Allows manual trigger
+    - cron: "*/5 * * * *"  
+  workflow_dispatch:  
 
 jobs:
   deploy_snowflake:
@@ -41,6 +41,8 @@ jobs:
 
   Update_data:
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
     steps:
       # Debug the event that triggered the workflow
       - name: Debug GitHub Event
@@ -55,9 +57,7 @@ jobs:
           python-version: "3.8"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas requests google-cloud-storage
+        run:  pip install -r requirements.txt
 
       - name: Set up Google Cloud credentials
         env:
@@ -65,9 +65,6 @@ jobs:
         run: |
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
-      - name : Deug 
-        run: |
-            echo ${{ github.event_name }}
 
       - name: Run Python script to upload FRED data
         env:

@@ -2,3 +2,7 @@ dotenv
 google-cloud-storage
 snowflake-cli
 snowflake-snowpark-python
+pandas 
+requests 
+google-cloud-storage
+python-dotenv
