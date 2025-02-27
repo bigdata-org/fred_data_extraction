@@ -1,6 +1,9 @@
 name: Update Data
 
 on:
+  push:
+    branches:
+      - Tanmay
   schedule:
     - cron: "*/5 * * * *"  # Runs every 5 minutes
   workflow_dispatch:  # Allows manual triggering
@@ -8,15 +11,7 @@ on:
 jobs:
   update_data:
     runs-on: ubuntu-latest
-    env:
-      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_T }}
-      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER_T }}
-      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD_T }}
-      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE_T }}
-      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE_T }}
-      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE_T }}
-      FRED_API: ${{ secrets.FRED_API_T }}
-      GCLOUD_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
+    
     steps:
       - name: Debug GitHub Event
         run: echo "${{ github.event_name }}"
