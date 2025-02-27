@@ -39,35 +39,35 @@ jobs:
       - name: Deploy Snowpark apps
         run: python ./scripts/deploy_snowpark_apps.py $GITHUB_WORKSPACE
 
-  Update_data:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    
-    steps:
-      # Debug the event that triggered the workflow
-      - name: Debug GitHub Event
-        run: echo "${{ github.event_name }}"
+  # Update_data:
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     # Debug the event that triggered the workflow
+  #     - name: Debug GitHub Event
+  #       run: echo "${{ github.event_name }}"
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.8"
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run:  pip install -r requirements.txt
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.8"
 
-      - name: Set up Google Cloud credentials
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-        run: |
-          echo "$GCP_SA_KEY" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
+  #     - name: Install dependencies
+  #       run:  pip install -r requirements.txt
 
-      - name: Run Python script to upload FRED data
-        env:
-          FRED_API_KEY: ${{ secrets.FRED_API }}
-          GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
-        run: python scripts/load_raw_data.py
+  #     - name: Set up Google Cloud credentials
+  #       env:
+  #         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+  #       run: |
+  #         echo "$GCP_SA_KEY" > gcp-key.json
+  #         export GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
+
+  #     - name: Run Python script to upload FRED data
+  #       env:
+  #         FRED_API_KEY: ${{ secrets.FRED_API }}
+  #         GCP_BUCKET_NAME: ${{ secrets.GCLOUD_BUCKET_NAME }}
+  #       run: python scripts/load_raw_data.py
