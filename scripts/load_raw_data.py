@@ -63,11 +63,11 @@ def load_raw_data(session, storagedir=None,schema=None,tname=None):
             ON_ERROR = 'CONTINUE';
         """
         result = session.sql(copy_query).collect()
-        print(f"Data successfully loaded into table: {tname}")
+        # print(f"Data successfully loaded into table: {tname}")
     except Exception as e:
         print(e)
         raise
-    return result
+    return "Data loaded successfully!!"
 
 
 def load_all_tables(session):
@@ -77,7 +77,7 @@ def load_all_tables(session):
         tnames = data['tables']
         schema = data['schema']
         for tname in tnames:
-            print("loading{}".format(tname))
+            # print("loading{}".format(tname))
             result = load_raw_data(session,storagedir=storagedir,schema=schema,tname=tname)
     
     return result 
@@ -87,6 +87,9 @@ def load_all_tables(session):
 
 if __name__ == "__main__":  
      with Session.builder.configs(connection_parameters).create() as session :
-        upload_data_to_gcloud(bucket_name, date.today())
-        load_all_tables(session)
-       
+        upload_result = upload_data_to_gcloud(bucket_name, date.today())
+        data_loading_result = load_all_tables(session)
+        print({
+            "GCP":upload_result,
+            "SF_table":data_loading_result
+            })
