@@ -28,10 +28,22 @@ connection_parameters = {
 }
 
 
-def upload_data_to_gcloud(bucket_name, end_date=None):
-    start_date= '2020-02-23'
+def upload_data_to_gcloud(session,bucket_name, end_date=None):
+    
     end_date=date.today()
     fred_api=os.getenv('FRED_API')
+    check_for_data_sf = f"""
+        SELECT COUNT(*) FROM FRED_DB.FRED_RAW.FREDDATA
+    """
+    count = session.sql(check_for_data_sf).collect()
+    
+    if count and count[0][0] > 0: 
+        start_date= date.today()  
+        end_date= date.today() 
+    else  :
+        start_date= '2020-01-01' 
+        end_date= date.today() 
+
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key={fred_api}&file_type=json&observation_start={start_date}&observation_end={end_date}"
     storage_client = storage.Client()
     try: 
@@ -87,7 +99,7 @@ def load_all_tables(session):
 
 if __name__ == "__main__":  
      with Session.builder.configs(connection_parameters).create() as session :
-        upload_result = upload_data_to_gcloud(bucket_name, date.today())
+        upload_result = upload_data_to_gcloud(session, bucket_name, date.today())
         data_loading_result = load_all_tables(session)
         print({
             "GCP":upload_result,
