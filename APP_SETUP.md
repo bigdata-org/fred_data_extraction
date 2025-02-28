@@ -9,7 +9,7 @@
 2. **Add a New Project**
    - Click on 'New App'.
    - Connect your GitHub repository.
-   - Choose the appropriate branch and the application entry point (e.g., `streamlit-app.py`).
+   - Choose the appropriate branch and the application entry point (e.g., `app.py`).
 
 3. **Deploy the Application**
    - Click 'Deploy' and wait for the deployment to complete.
@@ -62,6 +62,11 @@
 2. **Deploy Changes**
    - Push the updated code to the connected GitHub repository.
    - Streamlit Cloud will detect changes and redeploy automatically.
+
+## Deployed URLs
+
+- **Streamlit App:** [https://treasury-spread.streamlit.app/](https://treasury-spread.streamlit.app/)
+- **Lambda API Endpoint:** [https://culio1s6lj.execute-api.us-east-1.amazonaws.com/fred_stage/fred](https://culio1s6lj.execute-api.us-east-1.amazonaws.com/fred_stage/fred)
 
 ## Summary
 
