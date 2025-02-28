@@ -36,7 +36,7 @@ def process_fred_harmonized_data(session):
             ON target.DATA_DATE = source.DATA_DATE
             WHEN MATCHED THEN 
                 UPDATE SET target.VALUE = source.VALUE 
-                        -- target.CREATED_DATE = CURRENT_TIMESTAMP  -- Use current timestamp
+                           target.CREATED_DATE = CURRENT_TIMESTAMP  
             WHEN NOT MATCHED THEN 
                 INSERT (DATA_DATE, VALUE, CREATED_DATE) 
                 VALUES (source.DATA_DATE, source.VALUE, CURRENT_TIMESTAMP);
