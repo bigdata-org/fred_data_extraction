@@ -3,7 +3,7 @@ name: Deploy Snowpark Apps
 on:
   push:
     branches:
-      - mains
+      - main
   workflow_dispatch:  
 
 jobs:
