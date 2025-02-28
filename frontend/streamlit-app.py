@@ -21,10 +21,17 @@ if st.session_state['response']['statusCode']==200:
     df3 = pd.DataFrame(data3)
     df4 = pd.DataFrame(data4)
     # Ensure 'date' column is in datetime format
+    # Sample DataFrame (Make sure your 'date' column is a DateTime type)
     df4['date'] = pd.to_datetime(df4['date'])
 
-    # Sort the data by date
-    df4 = df4.sort_values(by='date')
+    # Create a complete date range
+    full_date_range = pd.date_range(start=df4['date'].min(), end=df4['date'].max(), freq='D')
+
+    # Reindex to include all dates
+    df4 = df4.set_index('date').reindex(full_date_range).rename_axis('date').reset_index()
+
+    # Forward-fill missing values
+    df4['current_value'] = df4['current_value'].ffill()
 
     # Create the Plotly line chart
     fig = px.line(df4, x='date', y='current_value', 
@@ -34,7 +41,6 @@ if st.session_state['response']['statusCode']==200:
 
     # Display the Plotly chart in Streamlit
     st.plotly_chart(fig)
-    st.dataframe(df4)
     st.header("Drill-Down Chart on Year and Month")
     # Dropdown for year selection
     selected_year = st.selectbox("Select Year", df2['year'].unique())
