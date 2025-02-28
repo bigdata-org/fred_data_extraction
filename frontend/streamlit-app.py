@@ -20,14 +20,21 @@ if st.session_state['response']['statusCode']==200:
     df2 = pd.DataFrame(data2)
     df3 = pd.DataFrame(data3)
     df4 = pd.DataFrame(data4)
-    st.header('T10 2Y - Overall')
+    # Ensure 'date' column is in datetime format
+    df4['date'] = pd.to_datetime(df4['date'])
+
+    # Sort the data by date
+    df4 = df4.sort_values(by='date')
+
+    # Create the Plotly line chart
     fig = px.line(df4, x='date', y='current_value', 
-                title="Interactive Line Chart with Percentage Difference",
-                labels={'current_value': 'Value'},  # Optional: label the axes
-                hover_data={'date': False, 'percent_difference': True})  # Ensure correct column name
+                    title="Interactive Line Chart (Discontinuous for Missing Data)",
+                    labels={'current_value': 'Value'},
+                    hover_data={'date': False})
 
     # Display the Plotly chart in Streamlit
     st.plotly_chart(fig)
+    st.dataframe(df4)
     st.header("Drill-Down Chart on Year and Month")
     # Dropdown for year selection
     selected_year = st.selectbox("Select Year", df2['year'].unique())
