@@ -1,5 +1,8 @@
 # CI/CD with Snowflake Notebooks
 
+- **Streamlit App:** [https://treasury-spread.streamlit.app/](https://treasury-spread.streamlit.app/)
+- **Lambda API Endpoint:** [https://culio1s6lj.execute-api.us-east-1.amazonaws.com/fred_stage/fred](https://culio1s6lj.execute-api.us-east-1.amazonaws.com/fred_stage/fred)
+
 ## Overview
 
 This document explains the process of setting up a CI/CD pipeline for deploying and synchronizing Snowflake notebooks. Before implementing CI/CD, initial data objects must be created to establish the required environment.
