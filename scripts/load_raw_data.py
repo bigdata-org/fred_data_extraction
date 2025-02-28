@@ -5,7 +5,6 @@ import pandas as pd
 from google.cloud import storage
 from io import BytesIO, StringIO
 from snowflake.snowpark import Session
-# from snowflake.snowpark.types import Struc
 from datetime import date;
 
 
@@ -28,22 +27,27 @@ connection_parameters = {
 }
 
 
-def upload_data_to_gcloud(session,bucket_name, end_date=None):
-    
-    end_date=date.today()
-    fred_api=os.getenv('FRED_API')
+def set_timeline(session):
     check_for_data_sf = f"""
         SELECT COUNT(*) FROM FRED_DB.FRED_RAW.FREDDATA
     """
     count = session.sql(check_for_data_sf).collect()
-    
+
     if count and count[0][0] > 0: 
         start_date= date.today()  
         end_date= date.today() 
     else  :
         start_date= '2020-01-01' 
         end_date= date.today() 
+    
+    return {
+        "start_date": start_date, 
+        "end_date" : end_date}
+    
 
+def upload_data_to_gcloud(bucket_name, start_date, end_date):
+    end_date=date.today()
+    fred_api=os.getenv('FRED_API')
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key={fred_api}&file_type=json&observation_start={start_date}&observation_end={end_date}"
     storage_client = storage.Client()
     try: 
@@ -71,8 +75,9 @@ def load_raw_data(session, storagedir=None,schema=None,tname=None):
         copy_query = f"""
             COPY INTO {tname}
             FROM {location}
-            FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1)
+            FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1 Null_IF= ('.'))
             ON_ERROR = 'CONTINUE';
+
         """
         result = session.sql(copy_query).collect()
         # print(f"Data successfully loaded into table: {tname}")
@@ -99,9 +104,11 @@ def load_all_tables(session):
 
 if __name__ == "__main__":  
      with Session.builder.configs(connection_parameters).create() as session :
-        upload_result = upload_data_to_gcloud(session, bucket_name, date.today())
+        timeline = set_timeline(session)
+        upload_result = upload_data_to_gcloud(bucket_name, start_date=timeline["start_date"], end_date=timeline["end_date"])
         data_loading_result = load_all_tables(session)
         print({
             "GCP":upload_result,
             "SF_table":data_loading_result
             })
+        
