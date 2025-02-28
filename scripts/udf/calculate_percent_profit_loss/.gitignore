@@ -1,0 +1,6 @@
+.packages/
+.venv/
+app.zip
+requirements.snowflake.txt
+__pycache__
+calculate_percent_profit_loss_udf.zip

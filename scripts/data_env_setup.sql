@@ -6,10 +6,20 @@ Author:       SATHYA
 Last Updated: 6/11/2024
 -----------------------------------------------------------------------------*/
 
+--!jinja
+
+/*-----------------------------------------------------------------------------
+Script:       data_env_setup.sql
+Author:       SATHYA
+Last Updated: 6/11/2024
+-----------------------------------------------------------------------------*/
+
 -- Project Initialization for Production Environment Setup
+--
 --
 -- This script establishes the foundational environment necessary for deploying the project
 -- into the production environment. The following steps will be executed:
+-- Note: This script can call a notebook with Snowpark integration, but most operations can be performed using SQL
 -- Note: This script can call a notebook with Snowpark integration, but most operations can be performed using SQL
 -- with CREATE OR REPLACE commands, except for step (3)
 -- 1. Create a user role and grant appropriate permissions.
@@ -30,6 +40,7 @@ USE ROLE FRED_ROLE;
 --WAREHOUSE
 CREATE OR REPLACE WAREHOUSE FRED_WH WAREHOUSE_SIZE = XSMALL, AUTO_SUSPEND = 300, AUTO_RESUME= TRUE;
  
+ 
 USE WAREHOUSE FRED_WH;
 USE DATABASE FRED_DB;
 
@@ -38,7 +49,20 @@ CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_INTEGRATIONS";
 CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_RAW";
 CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_HARMONIZED";
 CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_ANALYTICS";
+CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_INTEGRATIONS";
+CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_RAW";
+CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_HARMONIZED";
+CREATE OR REPLACE SCHEMA "FRED_DB"."{{env}}_FRED_ANALYTICS";
 
+--SECRET 
+CREATE OR REPLACE SECRET "FRED_DB"."{{env}}_INTEGRATIONS".AWS_ACCESS_KEY_SECRET
+TYPE = GENERIC_STRING 
+SECRET_STRING = '{{AWS_ACCESS_KEY}}';
+
+CREATE OR REPLACE SECRET "FRED_DB"."{{env}}_INTEGRATIONS".AWS_SECRET_ACCESS_KEY_SECRET
+TYPE = GENERIC_STRING 
+SECRET_STRING = '{{AWS_SECRET_ACCESS_KEY}}';
+ 
 --SECRET 
 CREATE OR REPLACE SECRET "FRED_DB"."{{env}}_INTEGRATIONS".AWS_ACCESS_KEY_SECRET
 TYPE = GENERIC_STRING 
